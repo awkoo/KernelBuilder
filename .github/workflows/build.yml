@@ -1,0 +1,158 @@
+name: 编译
+
+on:
+  workflow_call:
+    inputs:
+      ID:
+        description: '配置名称'
+        type: string
+        required: true
+      KERNEL_REPO:
+        description: '内核仓库地址'
+        type: string
+        required: true
+      KERNEL_BRANCH:
+        description: '内核仓库分支'
+        type: string
+        required: true
+      AOSP_CLANG_BRANCH:
+        description: '自定义AOSP Clang分支'
+        default: 'android12-release'
+        type: string
+        required: false
+      AOSP_CLANG_VERSION:
+        description: '自定义AOSP Clang版本号'
+        default: 'r416183b'
+        type: string
+        required: false
+      AOSP_GCC:
+        description: '是否使用AOSP GCC'
+        default: false
+        type: boolean
+        required: false
+      AOSP_GCC_BRANCH:
+        description: '自定义AOSP GCC分支'
+        default: 'android12-release'
+        type: string
+        required: false
+      AOSP_GCC_VERSION:
+        description: '自定义AOSP GCC版本号'
+        default: '4.9'
+        type: string
+        required: false
+      DEVICE_CODE:
+        description: '设备代号'
+        type: string
+        required: true
+      DEFCONFIG_CUSTOM:
+        description: '是否自定义defconfig'
+        default: false
+        type: boolean
+        required: false
+      DEFCONFIG_NAME:
+        description: 'defconfig名称'
+        type: string
+        required: true
+      KERNEL_SUBVERSION:
+        description: '自定义内核名称'
+        default: 'awkoo'
+        type: string
+        required: false
+
+jobs:
+  build:
+    name: 编译内核
+    permissions: { contents: write }
+    runs-on: ubuntu-latest
+    steps:
+      - name: 安装软件包
+        run: sudo apt update > /dev/null && sudo apt install -y binutils-arm-linux-gnueabi binutils-aarch64-linux-gnu ccache > /dev/null
+
+      - name: 同步文件
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            patches/
+            defconfig/
+          sparse-checkout-cone-mode: cone
+      
+      - name: 下载内核
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.KERNEL_REPO }}
+          ref: ${{ inputs.KERNEL_BRANCH }}
+          path: kernel
+
+      - name: 缓存Clang
+        id: cache-clang
+        uses: actions/cache@v4
+        with:
+          path: clang
+          key: clang-${{ inputs.AOSP_CLANG_BRANCH }}-${{ inputs.AOSP_CLANG_VERSION }}
+
+      - name: 下载Clang
+        if: steps.cache-clang.outputs.cache-hit != 'true'
+        run: mkdir -p clang && curl -LSs "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.AOSP_CLANG_BRANCH }}-release/clang-${{ inputs.AOSP_CLANG_VERSION }}.tar.gz" | tar xz -C clang
+
+      - name: 缓存Gcc
+        if: ${{ inputs.AOSP_GCC == 'true' }}
+        id: cache-gcc
+        uses: actions/cache@v4
+        with:
+          path:
+            gcc32/
+            gcc64/
+          key: gcc-${{ inputs.AOSP_GCC_BRANCH }}-${{ inputs.AOSP_GCC_VERSION }}
+
+      - name: 下载Gcc
+        if: ${{ inputs.AOSP_GCC == 'true' }} && steps.cache-gcc.outputs.cache-hit != 'true'
+        run: |
+          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-${{ inputs.AOSP_GCC_VERSION }}.git -b ${{ inputs.AOSP_GCC_BRANCH }}-release --depth=1 gcc64
+          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-${{ inputs.AOSP_GCC_VERSION }}.git -b ${{ inputs.AOSP_GCC_BRANCH }}-release --depth=1 gcc32
+
+      - name: 缓存ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ inputs.CONFIG_NAME }}
+          restore-keys: ${{ inputs.CONFIG_NAME }}
+          max-size: 5G
+
+      - name: 编译
+        working-directory: kernel
+        env:
+          MAKE_ARGS: O=${{ runner.temp }}/make ARCH=arm64 CC="ccache clang" CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-${{ AOSP_GCC == 'true' && 'android' || 'gnu' }}- CROSS_COMPILE_ARM32=arm-linux-${{ AOSP_GCC == 'true' && 'android' || 'gnu' }}eabi- -j$(nproc --all) -s
+        run: |
+          [ ${{ inputs.AOSP_GCC }} == 'true' ] && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
+          export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
+          [ ${{ inputs.DEFCONFIG_CUSTOM == 'true' ] && cp $GITHUB_WORKSPACE/defconfig/${{ inputs.defconfig }} arch/arm64/configs/${{ inputs.defconfig }}
+          echo "CONFIG_LOCALVERSION_AUTO=n" >> arch/arm64/configs/${{ inputs.defconfig }}
+          make ${{ env.MAKE_ARGS }} ${{ inputs.defconfig }}
+          make ${{ env.MAKE_ARGS }} LOCALVERSION=-${{ env.KERNEL_LOCALVERSION }}
+
+      - name: 打包
+        run: |
+         git clone https://github.com/osm0sis/AnyKernel3 --depth=1 ak3
+         cd ak3
+         rm -rf .git .github LICENSE README.md
+         cat >anykernel.sh <<EOF
+         properties() { '
+         kernel.string=Kernel for ${{ $inputs.DEVICE_CODE }}
+         do.devicecheck=1
+         device.name1=${{ inputs.DEVICE_CODE }}
+         '; }
+         block=auto
+         is_slot_device=auto
+         ramdisk_compression=auto
+         patch_vbmeta_flag=auto
+         . tools/ak3-core.sh
+         split_boot
+         flash_boot
+         EOF
+         cp ${{ runner.temp }}/make/arch/arm64/boot/Image.gz-dtb .
+         zip -q -r ${{ inputs.ID }}-AnyKernel3.zip *
+
+      - name: 上传文件
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.ID }}
+          path: ak3/${{ inputs.ID }}-AnyKernel3.zip
