@@ -148,7 +148,7 @@ jobs:
          rm -rf .git .github LICENSE README.md
          cat >anykernel.sh <<EOF
          properties() { '
-         kernel.string=Kernel for ${{ $inputs.DEVICE_CODE }}
+         kernel.string=Kernel for ${{ inputs.DEVICE_CODE }}
          do.devicecheck=1
          device.name1=${{ inputs.DEVICE_CODE }}
          '; }
