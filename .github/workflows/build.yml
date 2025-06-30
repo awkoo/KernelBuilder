@@ -99,7 +99,7 @@ jobs:
         run: mkdir -p clang && curl -LSs "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.AOSP_CLANG_BRANCH }}/clang-${{ inputs.AOSP_CLANG_VERSION }}.tar.gz" | tar xz -C clang
 
       - name: 缓存Gcc
-        if: ${{ inputs.AOSP_GCC == 'true' }}
+        if: ${{ inputs.AOSP_GCC }}
         id: cache-gcc
         uses: actions/cache@v4
         with:
@@ -109,7 +109,7 @@ jobs:
           key: gcc-${{ inputs.AOSP_GCC_BRANCH }}-${{ inputs.AOSP_GCC_VERSION }}
 
       - name: 下载Gcc
-        if: ${{ inputs.AOSP_GCC == 'true' }} && steps.cache-gcc.outputs.cache-hit != 'true'
+        if: ${{ inputs.AOSP_GCC }} && steps.cache-gcc.outputs.cache-hit != 'true'
         run: |
           git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-${{ inputs.AOSP_GCC_VERSION }}.git -b ${{ inputs.AOSP_GCC_BRANCH }} --depth=1 gcc64
           git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-${{ inputs.AOSP_GCC_VERSION }}.git -b ${{ inputs.AOSP_GCC_BRANCH }} --depth=1 gcc32
@@ -132,11 +132,11 @@ jobs:
       - name: 编译
         working-directory: kernel
         env:
-          MAKE_ARGS: O=${{ runner.temp }}/make ARCH=arm64 CC="ccache clang" ${{ inputs.AOSP_GCC == 'true' || 'CLANG_TRIPLE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1' }} CROSS_COMPILE=aarch64-linux-${{ inputs.AOSP_GCC == 'true' && 'android' || 'gnu' }}- CROSS_COMPILE_ARM32=arm-linux-${{ inputs.AOSP_GCC == 'true' && 'android' || 'gnu' }}eabi- -j$(nproc --all) -s
+          MAKE_ARGS: O=${{ runner.temp }}/make ARCH=arm64 CC="ccache clang" ${{ inputs.AOSP_GCC || 'CLANG_TRIPLE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1' }} CROSS_COMPILE=aarch64-linux-${{ inputs.AOSP_GCC && 'android' || 'gnu' }}- CROSS_COMPILE_ARM32=arm-linux-${{ inputs.AOSP_GCC && 'android' || 'gnu' }}eabi- -j$(nproc --all) -s
         run: |
-          [ ${{ inputs.AOSP_GCC }} == 'true' ] && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
+          ${{ inputs.AOSP_GCC }} && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
           export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
-          [ ${{ inputs.DEFCONFIG_CUSTOM }} == 'true' ] && cp $GITHUB_WORKSPACE/defconfig/${{ inputs.DEFCONFIG_NAME }} arch/arm64/configs/${{ inputs.DEFCONFIG_NAME }}
+          ${{ inputs.DEFCONFIG_CUSTOM }} && cp $GITHUB_WORKSPACE/defconfig/${{ inputs.DEFCONFIG_NAME }} arch/arm64/configs/${{ inputs.DEFCONFIG_NAME }}
           echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/${{ inputs.DEFCONFIG_NAME }}
           make ${{ env.MAKE_ARGS }} ${{ inputs.DEFCONFIG_NAME }}
           make ${{ env.MAKE_ARGS }} LOCALVERSION=-${{ env.KERNEL_LOCALVERSION }}
