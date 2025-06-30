@@ -81,7 +81,7 @@ jobs:
         with:
           sparse-checkout: |
             patches/
-            defconfig/
+            configs/
           sparse-checkout-cone-mode: cone
       
       - name: 下载内核

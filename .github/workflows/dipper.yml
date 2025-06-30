@@ -12,4 +12,6 @@ jobs:
       KERNEL_BRANCH: lineage-22.2
       AOSP_GCC: true
       DEVICE_CODE: dipper
-      DEFCONFIG_NAME: vendor/xiaomi/mi845_defconfig
+      DEFCONFIG_NAME: |
+        vendor/xiaomi/mi845_defconfig
+        vendor/xiaomi/dipper.config
