@@ -154,7 +154,7 @@ jobs:
           ${{ inputs.AOSP_GCC }} && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
           export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
           make ${{ env.MAKE_ARGS }} merged_defconfig
-          make ${{ env.MAKE_ARGS }} LOCALVERSION=-${{ env.KERNEL_LOCALVERSION }}
+          make ${{ env.MAKE_ARGS }} LOCALVERSION=-${{ env.KERNEL_SUBVERSION }}
 
       - name: 打包
         run: |
