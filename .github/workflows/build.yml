@@ -122,7 +122,7 @@ jobs:
           max-size: 5G
 
       - name: 补丁内核
-        if: '${{ inputs.KERNEL_PATCHES }}' != ''
+        if: ${{ inputs.KERNEL_PATCHES != '' }}
         working-directory: kernel
         run: |
           for filename in ${{ inputs.KERNEL_PATCHES }}; do
