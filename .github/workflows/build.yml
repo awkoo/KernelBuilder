@@ -138,7 +138,7 @@ jobs:
         run: |
           touch arch/arm64/configs/merged_defconfig
           for filename in ${{ inputs.DEFCONFIG_NAME }}; do
-            cat ${{ inputs.DEFCONFIG_CUSTOM && 'GITHUB_WORKSPACE' || 'arch/arm64' }}/configs/$filename >> arch/arm64/configs/merged_defconfig
+            cat ${{ inputs.DEFCONFIG_CUSTOM && '$GITHUB_WORKSPACE' || 'arch/arm64' }}/configs/$filename >> arch/arm64/configs/merged_defconfig
           done
           echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/merged_defconfig
 
