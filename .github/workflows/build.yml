@@ -58,6 +58,10 @@ on:
         default: 'awkoo'
         type: string
         required: false
+      KERNEL_PATCHES:
+        description: '内核补丁文件名，每行一个，补丁文件位于patches/ID下'
+        type: string
+        required: false
 
 jobs:
   build:
@@ -99,7 +103,7 @@ jobs:
         id: cache-gcc
         uses: actions/cache@v4
         with:
-          path:
+          path: |
             gcc32/
             gcc64/
           key: gcc-${{ inputs.AOSP_GCC_BRANCH }}-${{ inputs.AOSP_GCC_VERSION }}
@@ -113,9 +117,17 @@ jobs:
       - name: 缓存ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ inputs.CONFIG_NAME }}
-          restore-keys: ${{ inputs.CONFIG_NAME }}
+          key: ${{ inputs.ID }}
+          restore-keys: ${{ inputs.ID }}
           max-size: 5G
+
+      - name: 补丁内核
+        if: '${{ inputs.KERNEL_PATCHES }}' != ''
+        working-directory: kernel
+        run: |
+          for filename in ${{ inputs.KERNEL_PATCHES }}; do
+            patch -p1 -i $GITHUB_WORKSPACE/patches/${{ inputs.ID }}/$filename
+          done
 
       - name: 编译
         working-directory: kernel
@@ -125,7 +137,7 @@ jobs:
           [ ${{ inputs.AOSP_GCC }} == 'true' ] && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
           export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
           [ ${{ inputs.DEFCONFIG_CUSTOM == 'true' ] && cp $GITHUB_WORKSPACE/defconfig/${{ inputs.defconfig }} arch/arm64/configs/${{ inputs.defconfig }}
-          echo "CONFIG_LOCALVERSION_AUTO=n" >> arch/arm64/configs/${{ inputs.defconfig }}
+          echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/${{ inputs.defconfig }}
           make ${{ env.MAKE_ARGS }} ${{ inputs.defconfig }}
           make ${{ env.MAKE_ARGS }} LOCALVERSION=-${{ env.KERNEL_LOCALVERSION }}
 

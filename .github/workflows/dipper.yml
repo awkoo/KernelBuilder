@@ -1,0 +1,16 @@
+name: dipper
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    permissions: { contents: write }
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/build.yml
+    with:
+      ID: dipper
+      KERNEL_REPO: lineageOS/android_kernel_xiaomi_sdm845
+      KERNEL_BRANCH: lineage-22.2
+      AOSP_GCC: true
+      DEVICE_CODE: dipper
+      DEFCONFIG_NAME: vendor/xiaomi/mi845_defconfig
