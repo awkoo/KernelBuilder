@@ -132,7 +132,7 @@ jobs:
       - name: 编译
         working-directory: kernel
         env:
-          MAKE_ARGS: O=${{ runner.temp }}/make ARCH=arm64 CC="ccache clang" CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-${{ inputs.AOSP_GCC == 'true' && 'android' || 'gnu' }}- CROSS_COMPILE_ARM32=arm-linux-${{ inputs.AOSP_GCC == 'true' && 'android' || 'gnu' }}eabi- -j$(nproc --all) -s
+          MAKE_ARGS: O=${{ runner.temp }}/make ARCH=arm64 CC="ccache clang" ${{ inputs.AOSP_GCC == 'true' || 'CLANG_TRIPLE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1' }} CROSS_COMPILE=aarch64-linux-${{ inputs.AOSP_GCC == 'true' && 'android' || 'gnu' }}- CROSS_COMPILE_ARM32=arm-linux-${{ inputs.AOSP_GCC == 'true' && 'android' || 'gnu' }}eabi- -j$(nproc --all) -s
         run: |
           [ ${{ inputs.AOSP_GCC }} == 'true' ] && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
           export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
