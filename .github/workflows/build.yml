@@ -136,9 +136,9 @@ jobs:
         run: |
           [ ${{ inputs.AOSP_GCC }} == 'true' ] && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
           export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
-          [ ${{ inputs.DEFCONFIG_CUSTOM }} == 'true' ] && cp $GITHUB_WORKSPACE/defconfig/${{ inputs.defconfig }} arch/arm64/configs/${{ inputs.defconfig }}
-          echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/${{ inputs.defconfig }}
-          make ${{ env.MAKE_ARGS }} ${{ inputs.defconfig }}
+          [ ${{ inputs.DEFCONFIG_CUSTOM }} == 'true' ] && cp $GITHUB_WORKSPACE/defconfig/${{ inputs.DEFCONFIG_NAME }} arch/arm64/configs/${{ inputs.DEFCONFIG_NAME }}
+          echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/${{ inputs.DEFCONFIG_NAME }}
+          make ${{ env.MAKE_ARGS }} ${{ inputs.DEFCONFIG_NAME }}
           make ${{ env.MAKE_ARGS }} LOCALVERSION=-${{ env.KERNEL_LOCALVERSION }}
 
       - name: 打包
