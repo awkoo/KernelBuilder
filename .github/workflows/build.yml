@@ -45,12 +45,12 @@ on:
         type: string
         required: true
       DEFCONFIG_CUSTOM:
-        description: '是否自定义defconfig'
+        description: '是否自定义defconfig，需提前放置于defconfig目录'
         default: false
         type: boolean
         required: false
       DEFCONFIG_NAME:
-        description: 'defconfig名称'
+        description: 'defconfig名称，每行一个'
         type: string
         required: true
       KERNEL_SUBVERSION:
@@ -60,6 +60,10 @@ on:
         required: false
       KERNEL_PATCHES:
         description: '内核补丁文件名，每行一个，补丁文件位于patches/ID下'
+        type: string
+        required: false
+      CUSTOM_BUILD_ROOT:
+        description: '自定义编译所在目录，基于仓库根目录'
         type: string
         required: false
 
@@ -123,22 +127,33 @@ jobs:
 
       - name: 补丁内核
         if: ${{ inputs.KERNEL_PATCHES != '' }}
-        working-directory: kernel
+        working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
         run: |
           for filename in ${{ inputs.KERNEL_PATCHES }}; do
             patch -p1 -i $GITHUB_WORKSPACE/patches/${{ inputs.ID }}/$filename
           done
 
+      - name: 合并配置
+        working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
+        run: |
+          touch arch/arm64/configs/merged_defconfig
+          for filename in ${{ inputs.DEFCONFIG_NAME }}; do
+            cat ${{ inputs.DEFCONFIG_CUSTOM && GITHUB_WORKSPACE'/defconfig' || 'arch/arm64/configs' }}/$filename >> arch/arm64/configs/merged_defconfig
+          done
+          echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/merged_defconfig
+
       - name: 编译
-        working-directory: kernel
+        working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
         env:
-          MAKE_ARGS: O=${{ runner.temp }}/make ARCH=arm64 CC="ccache clang" ${{ inputs.AOSP_GCC && 'CLANG_TRIPLE=aarch64-linux-gnu-' || ' LLVM=1 LLVM_IAS=1' }} CROSS_COMPILE=aarch64-linux-${{ inputs.AOSP_GCC && 'android' || 'gnu' }}- CROSS_COMPILE_ARM32=arm-linux-${{ inputs.AOSP_GCC && 'android' || 'gnu' }}eabi- -j$(nproc --all) -s
+          MAKE_ARGS: |
+            O=${{ runner.temp }}/make ARCH=arm64 CC="ccache clang" -j$(nproc --all) -s \
+            ${{ inputs.AOSP_GCC && 'CLANG_TRIPLE=aarch64-linux-gnu-' || ' LLVM=1 LLVM_IAS=1' }} \
+            CROSS_COMPILE=aarch64-linux-${{ inputs.AOSP_GCC && 'android' || 'gnu' }}- \
+            CROSS_COMPILE_ARM32=arm-linux-${{ inputs.AOSP_GCC && 'android' || 'gnu' }}eabi-
         run: |
           ${{ inputs.AOSP_GCC }} && export PATH=$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH
           export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
-          ${{ inputs.DEFCONFIG_CUSTOM }} && cp $GITHUB_WORKSPACE/defconfig/${{ inputs.DEFCONFIG_NAME }} arch/arm64/configs/${{ inputs.DEFCONFIG_NAME }}
-          echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/${{ inputs.DEFCONFIG_NAME }}
-          make ${{ env.MAKE_ARGS }} ${{ inputs.DEFCONFIG_NAME }}
+          make ${{ env.MAKE_ARGS }} merged_defconfig
           make ${{ env.MAKE_ARGS }} LOCALVERSION=-${{ env.KERNEL_LOCALVERSION }}
 
       - name: 打包
