@@ -96,7 +96,7 @@ jobs:
 
       - name: 下载Clang
         if: steps.cache-clang.outputs.cache-hit != 'true'
-        run: mkdir -p clang && curl -LSs "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.AOSP_CLANG_BRANCH }}-release/clang-${{ inputs.AOSP_CLANG_VERSION }}.tar.gz" | tar xz -C clang
+        run: mkdir -p clang && curl -LSs "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.AOSP_CLANG_BRANCH }}/clang-${{ inputs.AOSP_CLANG_VERSION }}.tar.gz" | tar xz -C clang
 
       - name: 缓存Gcc
         if: ${{ inputs.AOSP_GCC == 'true' }}
