@@ -123,7 +123,7 @@ jobs:
           key: gcc-${{ inputs.AOSP_GCC_BRANCH }}-${{ inputs.AOSP_GCC_VERSION }}
 
       - name: 下载Gcc
-        if: ${{ inputs.AOSP_GCC }} && ${{ ! steps.cache-gcc.outputs.cache-hit }}
+        if: ${{ inputs.AOSP_GCC && steps.cache-gcc.outputs.cache-hit != true }}
         run: |
           git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-${{ inputs.AOSP_GCC_VERSION }}.git -b ${{ inputs.AOSP_GCC_BRANCH }} --depth=1 gcc64
           git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-${{ inputs.AOSP_GCC_VERSION }}.git -b ${{ inputs.AOSP_GCC_BRANCH }} --depth=1 gcc32
