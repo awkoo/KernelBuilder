@@ -160,7 +160,12 @@ jobs:
         if: ${{ inputs.KSU_SETUP_URL != '' }}
         run: |
           curl -LSs ${{ inputs.KSU_SETUP_URL }} | bash -s ${{ inputs.KSU_SETUP_BRANCH }}
-          ${{ inputs.KSU_USE_KPROBES }} && echo '\nCONFIG_KPROBES=y\nCONFIG_HAVE_KPROBES=y\nCONFIG_KPROBE_EVENTS=y' >> merged_defconfig
+          ${{ inputs.KSU_USE_KPROBES }} &&
+          echo '
+          CONFIG_KPROBES=y
+          CONFIG_HAVE_KPROBES=y
+          CONFIG_KPROBE_EVENTS=y
+          ' >> merged_defconfig
 
       - name: 编译
         working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
