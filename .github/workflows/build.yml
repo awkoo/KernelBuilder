@@ -153,7 +153,7 @@ jobs:
           for filename in ${{ inputs.DEFCONFIG_CUSTOM }}; do
             cat $GITHUB_WORKSPACE/configs/$filename >> arch/arm64/configs/merged_defconfig
           done
-          echo 'CONFIG_LOCALVERSIONl_AUTO=n' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_LOCALVERSION_AUTO=n' >> arch/arm64/configs/merged_defconfig
 
       - name: 安装KernelSU
         working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
