@@ -47,7 +47,6 @@ jobs:
       KSU_SETUP_BRANCH: nongki
       KERNEL_PATCHES:
         KSU_ManualHook_409.patch
-        KSU_SelinuxHook_409.patch
         KSU_Safemode.patch
         KSU_Umount.patch
       DEFCONFIG_CUSTOM:
