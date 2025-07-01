@@ -1,0 +1,31 @@
+name: 编译
+on: [ push, workflow_dispatch ]
+
+jobs:
+  dipper:
+    permissions: { contents: write }
+    uses: ./.github/workflows/build.yml
+    with:
+      ID: 1
+      KERNEL_REPO: lineageOS/android_kernel_xiaomi_sdm845
+      KERNEL_BRANCH: lineage-22.2
+      AOSP_GCC: true
+      DEVICE_CODE: dipper
+      DEFCONFIG_NAME:
+        vendor/xiaomi/mi845_defconfig
+        vendor/xiaomi/dipper.config
+  dipper1:
+    permissions: { contents: write }
+    uses: ./.github/workflows/build.yml
+    with:
+      ID: 1
+      KERNEL_REPO: lineageOS/android_kernel_xiaomi_sdm845
+      KERNEL_BRANCH: lineage-22.2
+      AOSP_GCC: true
+      DEVICE_CODE: dipper
+      DEFCONFIG_NAME:
+        vendor/xiaomi/mi845_defconfig
+        vendor/xiaomi/dipper.config
+      KSU_SETUP_URL: https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh
+      KSU_SETUP_BRANCH: nongki
+      KSU_USE_KPROBES: true

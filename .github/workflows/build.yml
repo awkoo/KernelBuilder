@@ -1,5 +1,3 @@
-name: 编译
-
 on:
   workflow_call:
     inputs:
@@ -45,9 +43,8 @@ on:
         type: string
         required: true
       DEFCONFIG_CUSTOM:
-        description: '是否自定义defconfig，需提前放置于configs目录'
-        default: false
-        type: boolean
+        description: '自定义defconfig，需提前放置于configs目录'
+        type: string
         required: false
       DEFCONFIG_NAME:
         description: 'defconfig名称，每行一个'
@@ -65,6 +62,19 @@ on:
       CUSTOM_BUILD_ROOT:
         description: '自定义编译所在目录，基于仓库根目录'
         type: string
+        required: false
+      KSU_SETUP_URL:
+        description: 'KernelSU安装脚本网址，填写视为启用KernelSU'
+        type: string
+        required: false
+      KSU_SETUP_BRANCH:
+        description: '使用的KernelSU分支，不填写则由安装脚本自动选择'
+        type: string
+        required: false
+      KSU_USE_KPROBES:
+        description: '是否使用KPROBES自动集成KernelSU'
+        type: boolean
+        default: false
         required: false
 
 jobs:
@@ -138,9 +148,19 @@ jobs:
         run: |
           touch arch/arm64/configs/merged_defconfig
           for filename in ${{ inputs.DEFCONFIG_NAME }}; do
-            cat ${{ inputs.DEFCONFIG_CUSTOM && '$GITHUB_WORKSPACE' || 'arch/arm64' }}/configs/$filename >> arch/arm64/configs/merged_defconfig
+            cat arch/arm64/configs/$filename >> arch/arm64/configs/merged_defconfig
           done
-          echo "CONFIG_LOCALVERSIONl_AUTO=n" >> arch/arm64/configs/merged_defconfig
+          for filename in ${{ inputs.DEFCONFIG_CUSTOM }}; do
+            cat $GITHUB_WORKSPACE/configs/$filename >> arch/arm64/configs/merged_defconfig
+          done
+          echo '\nCONFIG_LOCALVERSIONl_AUTO=n' >> arch/arm64/configs/merged_defconfig
+
+      - name: 安装KernelSU
+        working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
+        if: ${{ inputs.KSU_SETUP_URL != '' }}
+        run: |
+          curl -LSs ${{ inputs.KSU_SETUP_URL }} | bash -s ${{ inputs.KSU_SETUP_BRANCH }}
+          ${{ inputs.KSU_USE_KPROBES }} && echo '\nCONFIG_KPROBES=y\nCONFIG_HAVE_KPROBES=y\nCONFIG_KPROBE_EVENTS=y' >> merged_defconfig
 
       - name: 编译
         working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
@@ -181,5 +201,5 @@ jobs:
       - name: 上传文件
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.ID }}
-          path: ak3/${{ inputs.ID }}-AnyKernel3.zip
+          name: ${{ inputs.DEVICE_CODE }}
+          path: ak3/${{ inputs.DEVICE_CODE }}-AnyKernel3.zip
