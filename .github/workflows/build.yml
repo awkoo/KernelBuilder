@@ -56,7 +56,7 @@ on:
         type: string
         required: false
       KERNEL_PATCHES:
-        description: '内核补丁文件名，每行一个，补丁文件位于patches/ID下'
+        description: '内核补丁文件名，每行一个，补丁文件位于patches下'
         type: string
         required: false
       CUSTOM_BUILD_ROOT:
@@ -140,7 +140,7 @@ jobs:
         working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
         run: |
           for filename in ${{ inputs.KERNEL_PATCHES }}; do
-            patch -p1 -i $GITHUB_WORKSPACE/patches/${{ inputs.ID }}/$filename
+            patch -p1 -i $GITHUB_WORKSPACE/patches/$filename
           done
 
       - name: 合并配置
