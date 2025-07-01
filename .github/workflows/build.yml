@@ -153,7 +153,7 @@ jobs:
           for filename in ${{ inputs.DEFCONFIG_CUSTOM }}; do
             cat $GITHUB_WORKSPACE/configs/$filename >> arch/arm64/configs/merged_defconfig
           done
-          echo '\nCONFIG_LOCALVERSIONl_AUTO=n' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_LOCALVERSIONl_AUTO=n' >> arch/arm64/configs/merged_defconfig
 
       - name: 安装KernelSU
         working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
@@ -161,11 +161,9 @@ jobs:
         run: |
           curl -LSs ${{ inputs.KSU_SETUP_URL }} | bash -s ${{ inputs.KSU_SETUP_BRANCH }}
           ${{ inputs.KSU_USE_KPROBES }} &&
-          echo '
-          CONFIG_KPROBES=y
-          CONFIG_HAVE_KPROBES=y
-          CONFIG_KPROBE_EVENTS=y
-          ' >> merged_defconfig
+          echo 'CONFIG_KPROBES=y' >> merged_defconfig &&
+          echo 'CONFIG_HAVE_KPROBES=y' >> merged_defconfig &&
+          echo 'CONFIG_KPROBE_EVENTS=y' >> merged_defconfig
 
       - name: 编译
         working-directory: kernel/${{ inputs.CUSTOM_BUILD_ROOT }}
