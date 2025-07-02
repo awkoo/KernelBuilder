@@ -38,8 +38,8 @@ on:
         default: '4.9'
         type: string
         required: false
-      DEVICE_CODE:
-        description: '设备代号'
+      DEVICE_NAME:
+        description: '设备名称'
         type: string
         required: true
       DEFCONFIG_CUSTOM:
@@ -185,9 +185,8 @@ jobs:
          rm -rf .git .github LICENSE README.md
          cat >anykernel.sh <<EOF
          properties() { '
-         kernel.string=Kernel for ${{ inputs.DEVICE_CODE }}
-         do.devicecheck=1
-         device.name1=${{ inputs.DEVICE_CODE }}
+         kernel.string=Kernel for ${{ inputs.DEVICE_NAME }}
+         do.devicecheck=0
          '; }
          block=auto
          is_slot_device=auto
@@ -203,5 +202,5 @@ jobs:
       - name: 上传文件
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.DEVICE_CODE }}
-          path: ak3/${{ inputs.DEVICE_CODE }}-AnyKernel3.zip
+          name: ${{ inputs.DEVICE_NAME }}
+          path: ak3/${{ inputs.DEVICE_NAME }}-AnyKernel3.zip

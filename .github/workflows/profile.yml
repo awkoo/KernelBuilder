@@ -10,43 +10,18 @@ jobs:
       KERNEL_REPO: lineageOS/android_kernel_xiaomi_sdm845
       KERNEL_BRANCH: lineage-22.2
       AOSP_GCC: true
-      DEVICE_CODE: dipper
+      DEVICE_NAME: dipper
       DEFCONFIG_NAME:
         vendor/xiaomi/mi845_defconfig
         vendor/xiaomi/dipper.config
-
-  dipper1:
+  dipper:
     permissions: { contents: write }
     uses: ./.github/workflows/build.yml
     with:
       ID: 2
-      KERNEL_REPO: lineageOS/android_kernel_xiaomi_sdm845
-      KERNEL_BRANCH: lineage-22.2
+      KERNEL_REPO: fangkuaixiaoqiao/android_kernel_oppo_sm7325
+      KERNEL_BRANCH: oppo/sm7325_u_14.0.0_k9s
       AOSP_GCC: true
-      DEVICE_CODE: dipper
+      DEVICE_NAME: oppok9s
       DEFCONFIG_NAME:
-        vendor/xiaomi/mi845_defconfig
-        vendor/xiaomi/dipper.config
-      KSU_SETUP_URL: https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh
-      KSU_SETUP_BRANCH: nongki
-      KSU_USE_KPROBES: true
-
-  dipper2:
-    permissions: { contents: write }
-    uses: ./.github/workflows/build.yml
-    with:
-      ID: 3
-      KERNEL_REPO: lineageOS/android_kernel_xiaomi_sdm845
-      KERNEL_BRANCH: lineage-22.2
-      AOSP_GCC: true
-      DEVICE_CODE: dipper
-      DEFCONFIG_NAME:
-        vendor/xiaomi/mi845_defconfig
-        vendor/xiaomi/dipper.config
-      KSU_SETUP_URL: https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh
-      KSU_SETUP_BRANCH: nongki
-      KERNEL_PATCHES:
-        KSU_ManualHook_409.patch
-        KSU_Umount.patch
-      DEFCONFIG_CUSTOM:
-        SukisuUltraManualHook.config
+        oppok9s_defconfig
