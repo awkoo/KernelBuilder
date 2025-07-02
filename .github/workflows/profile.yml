@@ -14,7 +14,8 @@ jobs:
       DEFCONFIG_NAME:
         vendor/xiaomi/mi845_defconfig
         vendor/xiaomi/dipper.config
-  dipper:
+
+  oppok9s:
     permissions: { contents: write }
     uses: ./.github/workflows/build.yml
     with:
@@ -25,3 +26,15 @@ jobs:
       DEVICE_NAME: oppok9s
       DEFCONFIG_NAME:
         oppok9s_defconfig
+
+  oppok9procn:
+    permissions: { contents: write }
+    uses: ./.github/workflows/build.yml
+    with:
+      ID: 3
+      KERNEL_REPO: nishant6342/kernel_realme_RMX3031
+      KERNEL_BRANCH: T
+      AOSP_GCC: true
+      DEVICE_NAME: oppok9procn
+      DEFCONFIG_NAME:
+        cupida_defconfig
