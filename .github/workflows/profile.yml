@@ -24,6 +24,7 @@ jobs:
       KERNEL_BRANCH: oppo/sm7325_u_14.0.0_k9s
       AOSP_GCC: true
       DEVICE_NAME: oppok9s
+      CUSTOM_BUILD_ROOT: kernel/msm-5.4
       DEFCONFIG_NAME:
         oppok9s_defconfig
 
