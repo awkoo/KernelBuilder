@@ -22,7 +22,6 @@ jobs:
       ID: 2
       KERNEL_REPO: fangkuaixiaoqiao/android_kernel_oppo_sm7325
       KERNEL_BRANCH: oppo/sm7325_u_14.0.0_k9s
-      AOSP_GCC: true
       DEVICE_NAME: oppok9s
       CUSTOM_BUILD_ROOT: kernel/msm-5.4
       DEFCONFIG_NAME:
@@ -35,7 +34,6 @@ jobs:
       ID: 3
       KERNEL_REPO: nishant6342/kernel_realme_RMX3031
       KERNEL_BRANCH: T
-      AOSP_GCC: true
       DEVICE_NAME: oppok9procn
       DEFCONFIG_NAME:
         cupida_defconfig
